@@ -74,7 +74,7 @@ def calcular_indicadores(df):
     df['MACD'] = ema12 - ema26
     df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
     
-    # Bollinger Bands
+    # Bollinger Bands (Corregido)
     df['SMA20'] = df['CUPs'].rolling(20).mean()
     df['UpperBB'] = df['SMA20'] + (2 * df['CUPs'].rolling(20).std())
     df['LowerBB'] = df['SMA20'] - (2 * df['CUPs'].rolling(20).std())
@@ -86,16 +86,16 @@ def calcular_indicadores(df):
     return df.dropna()
 
 def generar_grafico_plotly(df):
-    """Crea gráficos interactivos con señales de trading"""
+    """Crea gráficos interactivos con Bollinger Bands"""
     fig = make_subplots(
         rows=4, cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        subplot_titles=("Precio y Señales de Trading", "RSI", "MACD", "Volatilidad"),
+        subplot_titles=("Precio y Bandas de Bollinger", "RSI", "MACD", "Volatilidad"),
         row_heights=[0.5, 0.2, 0.2, 0.1]
     )
     
-    # Gráfico principal con precios y medias móviles
+    # Gráfico principal con Bollinger Bands
     fig.add_trace(
         go.Scatter(
             x=df.index, 
@@ -124,7 +124,7 @@ def generar_grafico_plotly(df):
             y=df['LowerBB'],
             name="Banda Inferior",
             line=dict(color='rgba(0, 255, 0, 0.3)', width=1),
-            fill='tonexty',
+            fill='tonexty',  # Rellena el área entre Upper y Lower
             fillcolor='rgba(100, 100, 100, 0.1)',
             showlegend=True
         ),
@@ -146,31 +146,6 @@ def generar_grafico_plotly(df):
             name="SMA 200", 
             line=dict(dash='dot', color='purple')),
     row=1, col=1)
-    
-    # Añadir flechas para señales de trading
-    for i in range(1, len(df)):
-        if df['Señal'].iloc[i] == 2:  # Señal de compra (SMA30 cruza arriba SMA200)
-            fig.add_annotation(
-                x=df.index[i],
-                y=df['CUPs'].iloc[i],
-                xref="x1",
-                yref="y1",
-                text="▲",
-                font=dict(color="green", size=16),
-                showarrow=False,
-                opacity=0.8
-            )
-        elif df['Señal'].iloc[i] == -2:  # Señal de venta (SMA30 cruza abajo SMA200)
-            fig.add_annotation(
-                x=df.index[i],
-                y=df['CUPs'].iloc[i],
-                xref="x1",
-                yref="y1",
-                text="▼",
-                font=dict(color="red", size=16),
-                showarrow=False,
-                opacity=0.8
-            )
     
     # RSI
     fig.add_trace(
@@ -213,10 +188,9 @@ def generar_grafico_plotly(df):
     
     fig.update_layout(
         height=1000,
-        title_text="Monitor del Dólar Informal en Cuba - Señales de Trading",
+        title_text="Monitor del Dólar Informal en Cuba - Bandas de Bollinger",
         template="plotly_white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-        hovermode="x unified"
+        legend=dict(orientation="h", yanchor="bottom", y=1.02)
     )
     
     return fig.to_html(full_html=False)
