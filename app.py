@@ -5,6 +5,7 @@ import numpy as np
 from datetime import datetime
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import os
 
 app = Flask(__name__)
 
@@ -152,4 +153,5 @@ def home():
     return render_template("index.html", grafico="<p>Error cargando datos</p>")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host='0.0.0.0', port=port)
