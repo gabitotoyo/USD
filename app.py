@@ -171,7 +171,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-up',
                     color='green',
-                    size=17
+                    size=12
                 )
             ),
             row=1, col=1
@@ -187,7 +187,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-down',
                     color='red',
-                    size=17
+                    size=12
                 )
             ),
             row=1, col=1
