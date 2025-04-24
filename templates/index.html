@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Dólar Cuba</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Monitor del Dólar Informal en Cuba</h1>
+        
+        <!-- Gráfico Plotly -->
+        <div class="card shadow">
+            <div class="card-body">
+                {{ grafico | safe }}
+            </div>
+        </div>
+        
+        <!-- Botón de actualización -->
+        <div class="text-center mt-3">
+            <a href="/" class="btn btn-primary">Actualizar Datos</a>
+        </div>
+        
+        <!-- Pie de página -->
+        <footer class="mt-5 text-center text-muted">
+            <small>Datos proporcionados por api.cambiocuba.money</small>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

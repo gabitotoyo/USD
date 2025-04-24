@@ -1,0 +1,14 @@
+# Backend
+flask==2.3.2
+gunicorn==20.1.0
+
+# Procesamiento de datos
+pandas==2.0.3
+numpy==1.24.3
+requests==2.31.0
+
+# Visualización
+plotly==5.15.0
+
+# Utilidades
+python-dotenv==1.0.0
