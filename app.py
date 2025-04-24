@@ -233,7 +233,7 @@ def generar_grafico_plotly(df):
             x=df.index,
             y=volatilidad,
             name="Volatilidad",
-            marker_color='#17becf')
+            marker_color='#17becf'
         ),
         row=4, col=1
     )
