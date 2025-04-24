@@ -171,7 +171,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-up',
                     color='green',
-                    size=10
+                    size=17
                 )
             ),
             row=1, col=1
@@ -187,7 +187,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-down',
                     color='red',
-                    size=10
+                    size=17
                 )
             ),
             row=1, col=1
@@ -240,7 +240,7 @@ def generar_grafico_plotly(df):
     
     fig.update_layout(
         height=1000,
-        title_text="Monitor del Dólar Informal en Cuba",
+        title_text=" ",
         template="plotly_white",
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         margin=dict(t=100)
