@@ -9,7 +9,7 @@ import os
 
 app = Flask(__name__)
 
-# Configuración API (igual que tu versión original)
+# Configuración API
 API_BASE = "https://api.cambiocuba.money/api/v1/x-rates-by-date-range-history"
 PARAMS = {
     "trmi": "true",
@@ -18,7 +18,7 @@ PARAMS = {
 }
 
 def obtener_datos_actuales():
-    """Obtiene y procesa datos de la API (igual que tu código original)"""
+    """Obtiene y procesa datos de la API"""
     try:
         fecha_hasta = datetime.now().strftime("%Y-%m-%d 23:59:59")
         params = {**PARAMS, "date_to": fecha_hasta}
@@ -31,7 +31,7 @@ def obtener_datos_actuales():
         return pd.DataFrame()
 
 def procesar_datos_crudos(datos_api):
-    """Procesa datos crudos (igual que tu código original)"""
+    """Procesa datos crudos"""
     registros = []
     for item in datos_api:
         try:
@@ -51,7 +51,7 @@ def procesar_datos_crudos(datos_api):
     return pd.DataFrame()
 
 def calcular_indicadores(df):
-    """Calcula indicadores técnicos (adaptado para Plotly)"""
+    """Calcula indicadores técnicos"""
     if df.empty:
         return df
     
@@ -76,8 +76,8 @@ def calcular_indicadores(df):
     
     # Bollinger Bands
     df['SMA20'] = df['CUPs'].rolling(20).mean()
-    df['UpperBB'] = df['SMA20'] + 2 * df['CUPs'].rolling(20).std()
-    df['LowerBB'] = df['SMA20'] - 2 * df['CUPs'].rolling(20).std()
+    df['UpperBB'] = df['SMA20'] + (2 * df['CUPs'].rolling(20).std())
+    df['LowerBB'] = df['SMA20'] - (2 * df['CUPs'].rolling(20).std())
     
     # Señales de trading
     df['Cruce'] = np.where(df['SMA30'] > df['SMA200'], 1, -1)
@@ -86,58 +86,137 @@ def calcular_indicadores(df):
     return df.dropna()
 
 def generar_grafico_plotly(df):
-    """Crea gráficos interactivos con Plotly"""
+    """Crea gráficos interactivos con señales de trading"""
     fig = make_subplots(
         rows=4, cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        subplot_titles=("Precio y Medias Móviles", "RSI", "MACD", "Volatilidad"),
+        subplot_titles=("Precio y Señales de Trading", "RSI", "MACD", "Volatilidad"),
         row_heights=[0.5, 0.2, 0.2, 0.1]
     )
     
-    # Gráfico principal (Precio + Medias)
+    # Gráfico principal con precios y medias móviles
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['CUPs'], name="Precio", line=dict(color='#1f77b4')),
-        row=1, col=1
-    )
+        go.Scatter(
+            x=df.index, 
+            y=df['CUPs'], 
+            name="Precio", 
+            line=dict(color='#1f77b4'),
+            row=1, 
+            col=1
+        ),
+    row=1, col=1)
+    
+    # Bandas de Bollinger
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['SMA30'], name="SMA 30", line=dict(dash='dot', color='orange')),
-        row=1, col=1
-    )
+        go.Scatter(
+            x=df.index,
+            y=df['UpperBB'],
+            name="Banda Superior",
+            line=dict(color='rgba(255, 0, 0, 0.3)', width=1),
+            showlegend=True
+        ),
+    row=1, col=1)
+    
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['SMA200'], name="SMA 200", line=dict(dash='dot', color='purple')),
-        row=1, col=1
-    )
+        go.Scatter(
+            x=df.index,
+            y=df['LowerBB'],
+            name="Banda Inferior",
+            line=dict(color='rgba(0, 255, 0, 0.3)', width=1),
+            fill='tonexty',
+            fillcolor='rgba(100, 100, 100, 0.1)',
+            showlegend=True
+        ),
+    row=1, col=1)
+    
+    # Medias móviles
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['SMA30'], 
+            name="SMA 30", 
+            line=dict(dash='dot', color='orange')),
+    row=1, col=1)
+    
+    fig.add_trace(
+        go.Scatter(
+            x=df.index, 
+            y=df['SMA200'], 
+            name="SMA 200", 
+            line=dict(dash='dot', color='purple')),
+    row=1, col=1)
+    
+    # Añadir flechas para señales de trading
+    for i in range(1, len(df)):
+        if df['Señal'].iloc[i] == 2:  # Señal de compra (SMA30 cruza arriba SMA200)
+            fig.add_annotation(
+                x=df.index[i],
+                y=df['CUPs'].iloc[i],
+                xref="x1",
+                yref="y1",
+                text="▲",
+                font=dict(color="green", size=16),
+                showarrow=False,
+                opacity=0.8
+            )
+        elif df['Señal'].iloc[i] == -2:  # Señal de venta (SMA30 cruza abajo SMA200)
+            fig.add_annotation(
+                x=df.index[i],
+                y=df['CUPs'].iloc[i],
+                xref="x1",
+                yref="y1",
+                text="▼",
+                font=dict(color="red", size=16),
+                showarrow=False,
+                opacity=0.8
+            )
     
     # RSI
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['RSI'], name="RSI", line=dict(color='#ff7f0e')),
-        row=2, col=1
-    )
+        go.Scatter(
+            x=df.index, 
+            y=df['RSI'], 
+            name="RSI", 
+            line=dict(color='#ff7f0e')),
+    row=2, col=1)
+    
     fig.add_hline(y=70, line_dash="dot", line_color="red", row=2, col=1)
     fig.add_hline(y=30, line_dash="dot", line_color="green", row=2, col=1)
     
     # MACD
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['MACD'], name="MACD", line=dict(color='#2ca02c')),
-        row=3, col=1
-    )
+        go.Scatter(
+            x=df.index, 
+            y=df['MACD'], 
+            name="MACD", 
+            line=dict(color='#2ca02c')),
+    row=3, col=1)
+    
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['Signal'], name="Señal", line=dict(color='#d62728')),
-        row=3, col=1
-    )
+        go.Scatter(
+            x=df.index, 
+            y=df['Signal'], 
+            name="Señal", 
+            line=dict(color='#d62728')),
+    row=3, col=1)
     
     # Volatilidad
     volatilidad = df['CUPs'].pct_change().abs() * 100
     fig.add_trace(
-        go.Bar(x=df.index, y=volatilidad, name="Volatilidad", marker_color='#17becf'),
-        row=4, col=1
-    )
+        go.Bar(
+            x=df.index, 
+            y=volatilidad, 
+            name="Volatilidad", 
+            marker_color='#17becf'),
+    row=4, col=1)
     
     fig.update_layout(
-        height=900,
-        title_text="Monitor del Dólar Informal en Cuba",
-        template="plotly_white"
+        height=1000,
+        title_text="Monitor del Dólar Informal en Cuba - Señales de Trading",
+        template="plotly_white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        hovermode="x unified"
     )
     
     return fig.to_html(full_html=False)
